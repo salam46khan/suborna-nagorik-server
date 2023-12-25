@@ -30,6 +30,7 @@ async function run() {
 
     const storyCollection = client.db('subornaDB').collection('story');
     const userCollection = client.db('subornaDB').collection('users');
+    const memberCollection = client.db('subornaDB').collection('member');
 
 
     app.get('/story', async (req, res) => {
@@ -37,6 +38,31 @@ async function run() {
       res.send(result)
     })
 
+    app.get('/story/:id', async (req, res)=>{
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await storyCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.post('/story', async (req, res) => {
+      const story = req.body;
+      console.log(story);
+      const result = await storyCollection.insertOne(story)
+      res.send(result)
+    })
+
+    app.delete('/story/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await storyCollection.deleteOne(query)
+      res.send(result)
+    })
+
+    app.get('/member', async (req, res) => {
+      const result = await memberCollection.find().toArray()
+      res.send(result)
+    })
 
     app.post('/users', async (req, res) => {
       const user = req.body;
@@ -59,23 +85,26 @@ async function run() {
       if (req.query?.email) {
         query = { email: req.query.email }
       }
-      const result =await userCollection.findOne(query)
+      const result = await userCollection.findOne(query)
       res.send(result)
     })
 
-    app.patch('/user/admin/:id', async (req, res)=>{
+    app.patch('/user/admin/:id', async (req, res) => {
       const id = req.params.id;
-      console.log(id);
-      const filter = {_id: new ObjectId(id)};
-      const options = {upsert: true};
+      // console.log(id);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
       const update = {
-          $set: {
-              admin : true
-          }
+        $set: {
+          admin: true
+        }
       }
-      const result = await userCollection.updateOne(filter,update, options)
+
+
+
+      const result = await userCollection.updateOne(filter, update, options)
       res.send(result)
-  })
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
